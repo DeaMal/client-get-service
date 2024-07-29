@@ -4,9 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 import shop.household.client.get.service.ClientService;
-import shop.household.model.ClientCreateRequestDto;
-import shop.household.model.ClientCreateResponseDto;
-import shop.household.model.ErrorDto;
+import shop.household.model.ClientGetRequestDto;
+import shop.household.model.ClientGetResponseDto;
 
 @RestController
 @RequiredArgsConstructor
@@ -16,24 +15,12 @@ public class RequestController {
     private final ClientService clientService;
 
     @PostMapping
-    public ClientCreateResponseDto getByFilter(@RequestHeader HttpHeaders headers, @RequestBody ClientCreateRequestDto requestDto) {
-        try {
-            return clientService.getClients(requestDto); // TODO ClientGetRequestDto, ClientGetResponseDto
-        } catch (Exception e) {
-            return new ClientCreateResponseDto()
-                    .status(false)
-                    .error(new ErrorDto().code(422).message(e.getMessage()));
-        }
+    public ClientGetResponseDto getByFilter(@RequestHeader HttpHeaders headers, @RequestBody ClientGetRequestDto requestDto) {
+        return clientService.getClients(requestDto);
     }
 
     @GetMapping("/{id}")
-    public ClientCreateResponseDto getById(@PathVariable Integer id) {
-        try {
-            return clientService.getById(id);
-        } catch (Exception e) {
-            return new ClientCreateResponseDto()
-                    .status(false)
-                    .error(new ErrorDto().code(422).message(e.getMessage()));
-        }
+    public ClientGetResponseDto getById(@PathVariable Integer id) {
+        return clientService.getById(id);
     }
 }

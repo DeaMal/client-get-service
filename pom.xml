@@ -62,7 +62,7 @@
 
 		<dependency>
 			<groupId>shop.household</groupId>
-			<artifactId>client-create-service-api</artifactId>
+			<artifactId>client-get-service-api</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>

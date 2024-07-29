@@ -1,15 +1,15 @@
 package shop.household.client.get.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import shop.household.client.get.entity.Client;
 import shop.household.client.get.mapper.ClientMapper;
 import shop.household.client.get.repository.ClientRepository;
-import shop.household.model.ClientCreateRequestDto;
-import shop.household.model.ClientCreateResponseDto;
+import shop.household.model.ClientGetRequestDto;
+import shop.household.model.ClientGetResponseDto;
 import shop.household.model.ErrorDto;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Objects;
 
@@ -19,35 +19,49 @@ public class ClientService {
 
     private final ClientRepository clientRepository;
 
-    public ClientCreateResponseDto getClients(ClientCreateRequestDto clientDto) throws DataAccessException {
+    public ClientGetResponseDto getClients(ClientGetRequestDto clientDto) {
         List<Client> clients;
-        Client client = ClientMapper.INSTANCE.requestDtoToClient(clientDto);
-        if (Objects.nonNull(client.getId())) {
-            return getById(client.getId());
+        if (Objects.nonNull(clientDto.getId())) {
+            return getById(clientDto.getId());
         } else
-        if (Objects.nonNull(client.getFirstname())) {
-            clients = clientRepository.findByFirstnameContainingIgnoreCase(client.getFirstname());
-        } else if (Objects.nonNull(client.getLastname())) {
-            clients = clientRepository.findByLastnameContainingIgnoreCase(client.getLastname());
-        } else if (Objects.nonNull(client.getEmail())) {
-            clients = clientRepository.findByEmailContainingIgnoreCase(client.getEmail());
+        if (Objects.nonNull(clientDto.getFirstname())) {
+            clients = clientRepository.findByFirstnameContainingIgnoreCase(clientDto.getFirstname());
+        } else if (Objects.nonNull(clientDto.getLastname())) {
+            clients = clientRepository.findByLastnameContainingIgnoreCase(clientDto.getLastname());
+        } else if (Objects.nonNull(clientDto.getEmail())) {
+            clients = clientRepository.findByEmailContainingIgnoreCase(clientDto.getEmail());
+        } else if (Objects.nonNull(clientDto.getCreateAt())) {
+            if (Objects.isNull(clientDto.getCreateAt().getBegin())) {
+                clientDto.getCreateAt().setBegin(new Timestamp(0));
+            }
+            if (Objects.isNull(clientDto.getCreateAt().getEnd())) {
+                clientDto.getCreateAt().setEnd(new Timestamp(System.currentTimeMillis()));
+            }
+            clients = clientRepository.findByCreateAtBetween(clientDto.getCreateAt().getBegin(), clientDto.getCreateAt().getEnd());
         } else {
             clients = clientRepository.findAll();
         }
-        return new ClientCreateResponseDto()
+        if (clients.isEmpty()) {
+            return new ClientGetResponseDto()
+                    .status(false)
+                    .clients(null)
+                    .error(new ErrorDto().code(404).message("Client not found!"));
+        }
+        return new ClientGetResponseDto()
                 .status(true)
-                .client(ClientMapper.INSTANCE.clientToClientDto(clients.get(0)));
+                .clients(clients.stream().map(ClientMapper.INSTANCE::clientToClientDto).toList());
     }
 
-    public ClientCreateResponseDto getById(Integer id) {
+    public ClientGetResponseDto getById(Integer id) {
         var client = clientRepository.findById(id);
         if (client.isPresent()) {
-            return new ClientCreateResponseDto()
+            return new ClientGetResponseDto()
                     .status(true)
-                    .client(ClientMapper.INSTANCE.clientToClientDto(client.get()));
+                    .clients(List.of(ClientMapper.INSTANCE.clientToClientDto(client.get())));
         }
-        return new ClientCreateResponseDto()
+        return new ClientGetResponseDto()
                 .status(false)
+                .clients(null)
                 .error(new ErrorDto().code(404).message("Client with ID " + id + " not found!"));
     }
 }
