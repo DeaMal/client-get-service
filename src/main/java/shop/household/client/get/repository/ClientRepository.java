@@ -7,13 +7,14 @@ import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
 public interface ClientRepository extends JpaRepository<Client, Integer> {
     List<Client> findByFirstnameContainingIgnoreCase(String firstname);
     List<Client> findByLastnameContainingIgnoreCase(String lastname);
     List<Client> findByPhoneContainingIgnoreCase(String phone);
     List<Client> findByPhoneExtraContainingIgnoreCase(String phoneExtra);
-    List<Client> findByEmailContainingIgnoreCase(String email);
+    Optional<Client> findByEmailIgnoreCase(String email);
     List<Client> findByAddressContainingIgnoreCase(String address);
     List<Client> findByCreateAtBetween(Timestamp minCreateAt, Timestamp maxCreateAt);
     List<Client> findByUpdatedAtBetween(Timestamp minUpdatedAt, Timestamp maxUpdatedAt);
