@@ -21,5 +21,5 @@ public interface ClientRepository extends JpaRepository<Client, Integer> {
     List<Client> findByNotesContainingIgnoreCase(String notes);
     List<Client> findByLastOrderDateBetween(Date minLastOrderDate, Date maxLastOrderDate);
     List<Client> findByTotalOrdersBetween(Integer minTotalOrders, Integer maxTotalOrders);
-    List<Client> findByTotalSpentBetween(BigDecimal minTotalSpent , BigDecimal maxTotalSpent);
+    List<Client> findByTotalSpentBetween(BigDecimal minTotalSpent, BigDecimal maxTotalSpent);
 }

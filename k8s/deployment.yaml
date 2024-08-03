@@ -5,7 +5,7 @@ metadata:
   labels:
     app: client-get-service
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: client-get-service
@@ -17,11 +17,12 @@ spec:
       containers:
         - name: client-get-service
           image: deamal/client-get-service:0.0.1
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
             - name: DATASOURCE_HOST
-              value: 10.77.21.34
+              value: shop-database
 ---
 apiVersion: v1
 kind: Service
