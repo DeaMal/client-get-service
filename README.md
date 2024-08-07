@@ -46,7 +46,7 @@ To use the service, use `Postman` or a similar application, you can use `cURL`.
 
     localhost:8888/client/get
 
-example request body, only one of the following:
+Example of the request body. You can use any combination of parameters, except the `email` field. Search by `email` is carried out in strict accordance, so it must be unique.
 ```
 {
     "firstname": "John"

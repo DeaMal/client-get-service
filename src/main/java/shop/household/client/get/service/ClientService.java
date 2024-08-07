@@ -15,7 +15,6 @@ import shop.household.model.ClientGetRequestDto;
 import shop.household.model.ClientGetResponseDto;
 import shop.household.model.ErrorDto;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -33,27 +32,14 @@ public class ClientService {
             return getById(clientDto.getId());
         } else if (Objects.nonNull(clientDto.getEmail())) {
             clientRepository.findByEmailIgnoreCase(clientDto.getEmail()).ifPresent(clients::add);
-//        } else if (Objects.nonNull(clientDto.getFirstname())) {
-//            clients.addAll(clientRepository.findByFirstnameContainingIgnoreCase(clientDto.getFirstname()));
-//        } else if (Objects.nonNull(clientDto.getLastname())) {
-//            clients.addAll(clientRepository.findByLastnameContainingIgnoreCase(clientDto.getLastname()));
-//        } else if (Objects.nonNull(clientDto.getCreateAt())) {
-//            if (Objects.isNull(clientDto.getCreateAt().getBegin())) {
-//                clientDto.getCreateAt().setBegin(new Timestamp(0));
-//            }
-//            if (Objects.isNull(clientDto.getCreateAt().getEnd())) {
-//                clientDto.getCreateAt().setEnd(new Timestamp(System.currentTimeMillis()));
-//            }
-//            clients.addAll(clientRepository.findByCreateAtBetween(clientDto.getCreateAt().getBegin(), clientDto.getCreateAt().getEnd()));
         } else {
             clients.addAll(getClientsByFilter(clientDto));
-//            clients.addAll(clientRepository.findAll());
         }
         if (clients.isEmpty()) {
             return new ClientGetResponseDto()
                     .status(false)
                     .clients(null)
-                    .error(new ErrorDto().code(404).message("Client not found!"));
+                    .error(new ErrorDto().code(404).message("Clients not found!"));
         }
         return new ClientGetResponseDto()
                 .status(true)
@@ -64,20 +50,12 @@ public class ClientService {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Client> criteriaQuery = criteriaBuilder.createQuery(Client.class);
         Root<Client> root = criteriaQuery.from(Client.class);
-        List<Predicate> predicates = new ArrayList<>();
-        if (Objects.nonNull(clientDto.getFirstname())) {
-            predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("firstname")), "%" + clientDto.getFirstname().toLowerCase() + "%"));
+        ClientFilter clientFilter = new ClientFilter(criteriaBuilder, root);
+        List<Predicate> predicates = clientFilter.buildPredicates(clientDto);
+        if (predicates.isEmpty()) {
+            return new ArrayList<>();
         }
-        if (Objects.nonNull(clientDto.getLastname())) {
-            predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("lastname")), "%" + clientDto.getLastname().toLowerCase() + "%"));
-        }
-        criteriaQuery.select(root).where(
-                predicates.toArray(new Predicate[0])
-//                    cb.and(
-//                            cb.equal(root.get("firstname"), clientGetRequestDto.getFirstname()),
-//                            cb.equal(root.get("lastname"), clientGetRequestDto.getLastname())
-//                    )
-            );
+        criteriaQuery.select(root).where(predicates.toArray(new Predicate[0]));
         return entityManager.createQuery(criteriaQuery).getResultList();
     }
 
